@@ -1,4 +1,4 @@
-import { Poseidon, Experimental, Field, SelfProof } from 'snarkyjs';
+import { Bool, Poseidon, Experimental, Field, SelfProof } from 'snarkyjs';
 
 export { RecursiveHash, Hash };
 
@@ -26,8 +26,8 @@ const Hash = Experimental.ZkProgram({
 
       method(hash: Field, earlierProof: SelfProof<Field>) {
         earlierProof.verify();
-        const result = hash.equals(hash.div(2).mul(2));      
-
+        const result: Bool = hash.equals(hash.div(2).mul(2));      
+        const field_result = result == true ? Field(1) : Field(0);
         result.assertBool();
       }
     }
