@@ -1,11 +1,46 @@
 import Head from "next/head";
 
+import { useUserWalletContext } from "../../contexts/UserWalletContext";
+import StartGame from "../../components/StartGame";
 import Verification from "../../components/Verification";
 import BaseTemplate from "../Base";
-
-import { countries } from "../../data/countries";
+import Map from "../../components/Map";
 
 const HomeTemplate = () => {
+  const { wallet, startGame } = useUserWalletContext();
+
+  if (wallet === null) {
+    return (
+      <BaseTemplate>
+        <Head>
+          <title>Invisible Empire</title>
+          <meta
+            property="og:title"
+            content="Invisible Empire"
+            key="title"
+          />
+        </Head>
+        <Verification />
+      </BaseTemplate>
+    );
+  }
+
+  if (startGame === false) {
+    return (
+      <BaseTemplate>
+        <Head>
+          <title>Invisible Empire</title>
+          <meta
+            property="og:title"
+            content="Invisible Empire"
+            key="title"
+          />
+        </Head>
+        <StartGame />
+      </BaseTemplate>
+    );
+  }
+
   return (
     <BaseTemplate>
       <Head>
@@ -16,32 +51,7 @@ const HomeTemplate = () => {
           key="title"
         />
       </Head>
-      <Verification />
-    </BaseTemplate>
-  );
-  return (
-    <BaseTemplate>
-      <Head>
-        <title>Invisible Empire</title>
-        <meta
-          property="og:title"
-          content="Invisible Empire"
-          key="title"
-        />
-      </Head>
-      <div className="grid grid-cols-4 gap-10 w-full justify-center py-10 px-10">
-        {countries.map((item, index) => {
-          console.log(item.color);
-          return (
-            <div
-              key={index}
-              className={`flex p-5 bg-black text-white rounded-lg`}
-            >
-              <h1>{item.name}</h1>
-            </div>
-          );
-        })}
-      </div>
+      <Map />
     </BaseTemplate>
   );
 };
