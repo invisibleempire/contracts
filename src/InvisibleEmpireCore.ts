@@ -7,10 +7,8 @@ import {
 	PublicKey,
 	Bool,
 	Signature,
-	SelfProof,
-	Proof,
 } from "snarkyjs";
-import { GameBoard } from "../gameBoard";
+import { GameBoard } from "./gameBoard";
 
 export class InvisibleEmpireCore extends SmartContract {
 	@state(Field) map = State<Field>();

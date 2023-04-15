@@ -66,8 +66,6 @@ describe("InvisibleEmpireCore", () => {
 
 		let player1 = PrivateKey.random();
 		let player2 = PrivateKey.random();
-		let player3 = PrivateKey.random();
-		let player4 = PrivateKey.random();
 
 		// update transaction
 		const txn = await Mina.transaction(senderAccount, () => {
