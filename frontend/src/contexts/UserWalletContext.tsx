@@ -13,6 +13,7 @@ type UserWalletContextData = {
   setStartGame: (err: boolean) => void;
   error: boolean;
   startGame: boolean;
+  walletConnected: boolean;
 };
 
 type UserWalletProviderProps = {
@@ -30,15 +31,14 @@ export function UserWalletProvider({
   const [error, setError] = useState(false);
   const [startGame, setStartGame] = useState(false);
 
-  useEffect(() => {
-    console.log(window.mina);
-  }, []);
+  const [walletConnected, setWalletConnected] = useState(false);
 
   return (
     <UserWalletContext.Provider
       value={{
         wallet,
         setWallet,
+        walletConnected,
         error,
         setError,
         setStartGame,
