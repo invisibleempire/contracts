@@ -62,13 +62,8 @@ export class InvisibleEmpireCore extends SmartContract {
 		const map = new GameBoard(this.map.get());
 		const rollResult = await map.roll(Field(countryA), Field(countryB), Field(0));
 
-<<<<<<< HEAD
-    map.attack(player, countryA, countryB);
-    this.map.set(map.serialize());
-=======
 		map.attack(player, parseInt(countryA.toString()), parseInt(countryB.toString()));
 		this.map.set(map.serialize());
->>>>>>> 3418ff5d73f2c38f2baff33fac6f486eb04fc9e9
 
 		const winner = map.checkWinner();
 
