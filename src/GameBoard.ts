@@ -1,0 +1,121 @@
+import { Field, Bool, Proof, Poseidon } from 'snarkyjs';
+
+export const MAX_PLAYER_COUNT = 4;
+export const MAX_TERRITORY_COUNT = 16;
+
+interface Territory {
+  player: Field;
+  troops: Field;
+}
+
+export class GameBoard {
+  map: Territory[];
+
+  // keeps track of how many territory a player owns
+  userOwnedTerritory: Field[];
+  recursive_proof: Proof<Field>;
+
+  constructor(serializedState: Field) {
+    // convert felt to bits
+    let bits: Bool[] = serializedState.toBits(96);
+
+    // parse the territories state first
+    // 80 bits bcs (2,3) * 16 territories
+    for (let i = 0; i < 80; i = i + 5) {
+      // convert bool to number as player id
+
+      const t: Territory = {
+        player: Field.fromBits(bits.slice(i, i + 2)),
+        troops: Field.fromBits(bits.slice(i + 2, i + 5)),
+      };
+
+      this.map.push(t);
+    }
+
+    for (let i = 80; i < 96; i = i + 4) {
+      this.userOwnedTerritory.push(Field.fromBits(bits.slice(i, i + 4)));
+    }
+  }
+
+  attack(player: number, countryA: number, countryB: number) {
+    let result = this.roll(
+      Field(countryA),
+      Field(countryB),
+      Field(0)
+    );
+    // assert that player owns the `countryA`
+    const playerA = this.map[countryA].player;
+    Field(player).assertEquals(Field(playerA));
+
+    if (result) {
+      const currentTroops = this.map[countryB].troops;
+      this.map[countryB].troops = currentTroops - 1;
+    } else {
+      const currentTroops = this.map[countryA].troops;
+      this.map[countryA].troops = currentTroops - 1;
+    }
+
+    this._postAttack(countryA, countryB);
+  }
+
+  serialize(): Field {
+    const mapBits: Bool[] = [];
+    const ownedBits: Bool[] = [];
+
+    for (let i = 0; i < this.map.length; i++) {
+      const { player, troops } = this.map[i];
+      mapBits.concat(Field(player).toBits(2));
+      mapBits.concat(Field(troops).toBits(3));
+    }
+
+    for (let i = 0; i < this.userOwnedTerritory.length; i++) {
+      const current = this.userOwnedTerritory[i];
+      ownedBits.concat(Field(current).toBits(4));
+    }
+
+    return Field.fromBits(mapBits.concat(ownedBits));
+  }
+
+  _postAttack(territoryA: number, territoryB: number) {
+    const { player: playerA, troops: troopsA } = this.map[territoryA];
+    const { player: playerB, troops: troopsB } = this.map[territoryB];
+
+    if (troopsA === 0 && troopsB > 0) {
+      this._transferTerritoryOwnership(territoryA, playerB);
+    }
+
+    if (troopsB === 0 && troopsA > 0) {
+      this._transferTerritoryOwnership(territoryB, playerA);
+    }
+  }
+
+  _transferTerritoryOwnership(territory: number, player: number) {
+    this.map[territory].player = player;
+  }
+
+  checkWinner() {
+    // check if a player has all the territories
+    const winner = this.userOwnedTerritory.findIndex(
+      (value) => value === MAX_TERRITORY_COUNT
+    );
+
+    return winner;
+  }
+  roll(
+    attacking_country: Field,
+    attacked_country: Field,
+    attacker_nonce: Field,
+  ) {
+    const hash_output = Poseidon.hash([
+      attacking_country,
+      attacked_country,
+      attacker_nonce,
+    ]);
+  
+    const result = hash_output.toBits(256)[255] == Bool(false) ? false : true;
+  
+    // Return true if the attacker wins, false otherwise
+    return result;
+  }
+}
+
