@@ -1,6 +1,4 @@
-import React, { useEffect } from "react";
-
-import { ethers } from "ethers";
+import React from "react";
 
 import { useUserWalletContext } from "../../contexts/UserWalletContext";
 
@@ -33,9 +31,11 @@ const Verification = () => {
   };
 
   return (
-    <div className="flex flex-col gap-5 justify-center items-center align-center h-[90vh]">
-      <h1>Welcome to Invisible Empire</h1>
-      <h1>First connect your wallet</h1>
+    <div className="flex flex-col gap-5 justify-center items-center align-center h-[80vh]">
+      <div className="flex flex-col h-2/5 justify-between items-center">
+        <h1 className="text-[40px] font-bold">Welcome</h1>
+        <h1 className="text-[20px]">First connect your wallet</h1>
+      </div>
       <button
         onClick={() => connect()}
         className="bg-primary p-3 rounded-[16px]"
