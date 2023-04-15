@@ -79,7 +79,7 @@ export class InvisibleEmpireCore extends SmartContract {
     // TODO: add player nonce for the last value
     const roll_result = await map.roll(Field(countryA), Field(countryB), Field(0));
 
-    map.attack(roll_result, player, countryA, countryB);
+    map.attack(player, countryA, countryB);
     this.map.set(map.serialize());
 
     const winner = map.checkWinner();
