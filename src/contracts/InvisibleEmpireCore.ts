@@ -7,13 +7,14 @@ import {
   PublicKey,
   Bool,
   Signature,
+  SelfProof,
+  Proof
 } from 'snarkyjs';
 import { GameBoard } from '../GameBoard';
-import { RecursiveHash, Hash } from './recursive_hash';
+// import { RecursiveHash, Hash } from './recursive_hash';
 
 export class InvisibleEmpireCore extends SmartContract {
   @state(Field) map = State<Field>();
-  @state(Field) recursive_proof = State<Field>();
   @state(Bool) gameDone = State<Bool>();
 
   @state(PublicKey) player1 = State<PublicKey>();
@@ -56,7 +57,7 @@ export class InvisibleEmpireCore extends SmartContract {
     this.map.set(Field(0));
   }
 
-  @method play(
+  @method async play(
     pubkey: PublicKey,
     signature: Signature,
     countryA: number,
@@ -75,7 +76,8 @@ export class InvisibleEmpireCore extends SmartContract {
     // 4. get and deserialize the board
     this.map.assertEquals(this.map.get()); // precondition that links this.board.get() to the actual on-chain state
     const map = new GameBoard(this.map.get());
-    const roll_result = this._roll(Field(countryA), Field(countryB), Field(0), this.recursive_proof);
+    // TODO: add player nonce for the last value
+    const roll_result = await map.roll(Field(countryA), Field(countryB), Field(0));
 
     map.attack(roll_result, player, countryA, countryB);
     this.map.set(map.serialize());
@@ -126,17 +128,7 @@ export class InvisibleEmpireCore extends SmartContract {
       return 3;
     }
   }
-
-  _roll(attacking_country: Field, attacked_country: Field, attacker_nonce: Field, proof: Field) {
-    // Call the roll_dice method and store the result as an object
-    const rollResult = RecursiveHash.roll_dice(attacking_country, attacked_country, attacker_nonce, proof);
-    const { result, morphing_proof: new_proof } = rollResult;
-    
-    // Set the recursive proof
-    this.recursive_proof.set(new_proof);
-    // Returns the result of the dice roll as a boolean: true if the attacker wins, false if the defender wins
-    return result;
-  }
+  
   
   
 }
