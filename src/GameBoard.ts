@@ -4,19 +4,19 @@ export const MAX_PLAYER_COUNT = 4;
 export const MAX_TERRITORY_COUNT = 16;
 
 interface Territory {
-  player: number;
-  troops: number;
+  player: Field;
+  troops: Field;
 }
 
 export class GameBoard {
   map: Territory[];
 
   // keeps track of how many territory a player owns
-  userOwnedTerritory: number[];
+  userOwnedTerritory: Field[];
 
   constructor(serializedState: Field) {
     // convert felt to bits
-    let bits = serializedState.toBits(96);
+    let bits: Bool[] = serializedState.toBits(96);
 
     // parse the territories state first
     // 80 bits bcs (2,3) * 16 territories
@@ -24,15 +24,15 @@ export class GameBoard {
       // convert bool to number as player id
 
       const t: Territory = {
-        // player:
-        // troops:
+        player: Field.fromBits(bits.slice(i, i+2)),
+        troops: Field.fromBits(bits.slice(i+2, i+5)),
       };
 
-      // this.map.push(t)
+      this.map.push(t)
     }
 
     for (let i = 80; i < 96; i = i + 4) {
-      // this.ownedTerritory.push()
+      this.userOwnedTerritory.push(Field.fromBits(bits.slice(i, i+4)))
     }
   }
 
