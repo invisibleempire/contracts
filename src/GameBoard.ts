@@ -1,4 +1,4 @@
-import { Field, Bool } from 'snarkyjs';
+import { Field, Bool, Proof, Poseidon } from 'snarkyjs';
 
 export const MAX_PLAYER_COUNT = 4;
 export const MAX_TERRITORY_COUNT = 16;
@@ -13,6 +13,7 @@ export class GameBoard {
 
   // keeps track of how many territory a player owns
   userOwnedTerritory: Field[];
+  recursive_proof: Proof<Field>;
 
   constructor(serializedState: Field) {
     // convert felt to bits
@@ -24,19 +25,24 @@ export class GameBoard {
       // convert bool to number as player id
 
       const t: Territory = {
-        player: Field.fromBits(bits.slice(i, i+2)),
-        troops: Field.fromBits(bits.slice(i+2, i+5)),
+        player: Field.fromBits(bits.slice(i, i + 2)),
+        troops: Field.fromBits(bits.slice(i + 2, i + 5)),
       };
 
-      this.map.push(t)
+      this.map.push(t);
     }
 
     for (let i = 80; i < 96; i = i + 4) {
-      this.userOwnedTerritory.push(Field.fromBits(bits.slice(i, i+4)))
+      this.userOwnedTerritory.push(Field.fromBits(bits.slice(i, i + 4)));
     }
   }
 
-  attack(result: boolean, player: number, countryA: Field, countryB: Field) {
+  attack(player: number, countryA: number, countryB: number) {
+    let result = this.roll(
+      Field(countryA),
+      Field(countryB),
+      Field(0)
+    );
     // assert that player owns the `countryA`
     const playerA = this.map[countryA].player;
     Field(player).assertEquals(Field(playerA));
@@ -95,4 +101,21 @@ export class GameBoard {
 
     return winner;
   }
+  roll(
+    attacking_country: Field,
+    attacked_country: Field,
+    attacker_nonce: Field,
+  ) {
+    const hash_output = Poseidon.hash([
+      attacking_country,
+      attacked_country,
+      attacker_nonce,
+    ]);
+  
+    const result = hash_output.toBits(256)[255] == Bool(false) ? false : true;
+  
+    // Return true if the attacker wins, false otherwise
+    return result;
+  }
 }
+
