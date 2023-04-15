@@ -18,6 +18,12 @@
       "./*": ["../src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.{js,ts,jsx,tsx}", "**/*.{js,ts,jsx,tsx}", "src/templates/Home/index.tsx"],
+  "include": [
+    "next-env.d.ts",
+    "global.d.ts",
+    "**/*.{js,ts,jsx,tsx}",
+    "**/*.{js,ts,jsx,tsx}",
+    "src/templates/Home/index.tsx"
+  ],
   "exclude": ["node_modules"]
 }
