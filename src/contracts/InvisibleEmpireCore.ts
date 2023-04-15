@@ -9,9 +9,11 @@ import {
   Signature,
 } from 'snarkyjs';
 import { GameBoard } from '../GameBoard';
+import { RecursiveHash, Hash } from './recursive_hash';
 
 export class InvisibleEmpireCore extends SmartContract {
   @state(Field) map = State<Field>();
+  @state(Field) recursive_proof = State<Field>();
   @state(Bool) gameDone = State<Bool>();
 
   @state(PublicKey) player1 = State<PublicKey>();
@@ -123,4 +125,17 @@ export class InvisibleEmpireCore extends SmartContract {
       return 3;
     }
   }
+
+  @method roll(attacking_country: Field, attacked_country: Field, attacker_nonce: Field, proof: Field) {
+    // Call the roll_dice method and store the result as an object
+    const rollResult = RecursiveHash.roll_dice(attacking_country, attacked_country, attacker_nonce, proof);
+    const { result, morphing_proof: new_proof } = rollResult;
+    
+    // Set the recursive proof
+    this.recursive_proof.set(new_proof);
+    // Returns the result of the dice roll as a boolean: true if the attacker wins, false if the defender wins
+    return result;
+  }
+  
+  
 }
