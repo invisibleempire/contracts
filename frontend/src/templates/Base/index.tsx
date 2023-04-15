@@ -7,9 +7,6 @@ const BaseTemplate = ({ children }: any) => (
       <Header />
     </header>
     <main className="flex-grow">{children}</main>{" "}
-    <footer>
-      <Footer />
-    </footer>
   </div>
 );
 
