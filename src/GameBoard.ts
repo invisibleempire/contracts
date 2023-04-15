@@ -36,9 +36,7 @@ export class GameBoard {
     }
   }
 
-  attack(player: number, countryA: number, countryB: number) {
-    const result = this._rollDice();
-
+  attack(result: boolean, player: number, countryA: Field, countryB: Field) {
     // assert that player owns the `countryA`
     const playerA = this.map[countryA].player;
     Field(player).assertEquals(Field(playerA));
@@ -70,13 +68,6 @@ export class GameBoard {
     }
 
     return Field.fromBits(mapBits.concat(ownedBits));
-  }
-
-  /// `true` means the roll favors the attacker,
-  /// otherwise `false`.
-  _rollDice(): boolean {
-    // ROLL DICE LOGIC HERE
-    return true;
   }
 
   _postAttack(territoryA: number, territoryB: number) {

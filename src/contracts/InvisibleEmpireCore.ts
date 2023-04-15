@@ -75,8 +75,9 @@ export class InvisibleEmpireCore extends SmartContract {
     // 4. get and deserialize the board
     this.map.assertEquals(this.map.get()); // precondition that links this.board.get() to the actual on-chain state
     const map = new GameBoard(this.map.get());
+    const roll_result = this._roll(Field(countryA), Field(countryB), Field(0), this.recursive_proof);
 
-    map.attack(player, countryA, countryB);
+    map.attack(roll_result, player, countryA, countryB);
     this.map.set(map.serialize());
 
     const winner = map.checkWinner();
@@ -126,7 +127,7 @@ export class InvisibleEmpireCore extends SmartContract {
     }
   }
 
-  @method roll(attacking_country: Field, attacked_country: Field, attacker_nonce: Field, proof: Field) {
+  _roll(attacking_country: Field, attacked_country: Field, attacker_nonce: Field, proof: Field) {
     // Call the roll_dice method and store the result as an object
     const rollResult = RecursiveHash.roll_dice(attacking_country, attacked_country, attacker_nonce, proof);
     const { result, morphing_proof: new_proof } = rollResult;
