@@ -1,4 +1,4 @@
-import { Field, Bool, Proof, Poseidon } from "snarkyjs";
+import { Field, Bool, Proof, Poseidon, Circuit } from "snarkyjs";
 
 export const MAX_PLAYER_COUNT = 4;
 export const MAX_TERRITORY_COUNT = 16;
@@ -12,12 +12,18 @@ export class GameBoard {
 	map: Territory[] = [];
 
 	// keeps track of how many territory a player owns
-	userOwnedTerritory: number[] = [];
+	// userOwnedTerritory: number[] = [];
 	recursive_proof: Proof<Field>;
+
+	player1Territory: number;
+
+	player2Territory: number;
 
 	constructor(serializedState: Field) {
 		// convert felt to bits
-		let bits: Bool[] = serializedState.toBits(96);
+		let bits: Bool[] = serializedState.toBits(80);
+		let p1T = 0;
+		let p2T = 0;
 
 		// parse the territories state first
 		// 80 bits bcs (2,3) * 16 territories
@@ -26,11 +32,11 @@ export class GameBoard {
 
 			const playerBits = bits
 				.slice(i, i + 2)
-				.map((value) => (value.toBoolean() === true ? 1 : 0))
+				.map((value) => (value.toString() == "true" ? 1 : 0))
 				.join("");
 			const troopBits = bits
 				.slice(i + 2, i + 5)
-				.map((value) => (value.toBoolean() === true ? 1 : 0))
+				.map((value) => (value.toString() == "true" ? 1 : 0))
 				.join("");
 
 			const t: Territory = {
@@ -38,23 +44,24 @@ export class GameBoard {
 				player: parseInt(playerBits, 2),
 			};
 
+			if (t.player === 0) {
+				p1T++;
+			} else if (t.player === 1) {
+				p2T++;
+			}
+
 			this.map.push(t);
 		}
 
-		for (let i = 80; i < 88; i = i + 4) {
-			const ownedBits = bits
-				.slice(i, i + 4)
-				.map((value) => (value.toBoolean() === true ? 1 : 0))
-				.join("");
-			this.userOwnedTerritory.push(parseInt(ownedBits, 2));
-		}
+		this.player1Territory = p1T;
+		this.player2Territory = p2T;
 	}
 
-	attack(player: number, countryA: number, countryB: number) {
+	attack(player: Field, countryA: number, countryB: number) {
 		let result = this.roll(Field(countryA), Field(countryB), Field(0));
 		// assert that player owns the `countryA`
 		const playerA = this.map[countryA].player;
-		Field(player).assertEquals(Field(playerA));
+		player.assertEquals(Field(playerA));
 
 		if (result) {
 			const currentTroops = this.map[countryB].troops;
@@ -77,10 +84,13 @@ export class GameBoard {
 			mapBits.concat(Field(troops).toBits(3));
 		}
 
-		for (let i = 0; i < this.userOwnedTerritory.length; i++) {
-			const current = this.userOwnedTerritory[i];
-			ownedBits.concat(Field(current).toBits(4));
-		}
+		// for (let i = 0; i < this.userOwnedTerritory.length; i++) {
+		// 	const current = this.userOwnedTerritory[i];
+		// 	ownedBits.concat(Field(current).toBits(4));
+		// }
+
+		ownedBits.concat(Field(this.player1Territory).toBits(4));
+		ownedBits.concat(Field(this.player2Territory).toBits(4));
 
 		return Field.fromBits(mapBits.concat(ownedBits));
 	}
@@ -102,13 +112,16 @@ export class GameBoard {
 		this.map[territory].player = player;
 	}
 
-	checkWinner() {
+	checkIfAPlayerWin() {
 		// check if a player has all the territories
-		const winner = this.userOwnedTerritory.findIndex(
-			(value) => value === MAX_TERRITORY_COUNT
-		);
+		// const winner = this.userOwnedTerritory.findIndex(
+		// 	(value) => value === MAX_TERRITORY_COUNT
+		// );
 
-		return winner;
+		return Bool.or(
+			Field(this.player1Territory).equals(Field(16)),
+			Field(this.player2Territory).equals(Field(16))
+		);
 	}
 
 	roll(attacking_country: Field, attacked_country: Field, attacker_nonce: Field) {

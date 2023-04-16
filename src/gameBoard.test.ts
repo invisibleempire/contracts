@@ -11,14 +11,14 @@ describe("GameBoard", () => {
 			0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0,
 			0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0,
 			1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1,
-			1, 1, 1, 0, 1, 1, 0, 1, 0, 1,
+			1, 1,
 		];
+
 		const stateBool = state.map((value) => (value === 1 ? true : false));
 
 		const game = new GameBoard(Field.fromBits(stateBool));
 
 		const map = game.map;
-		const userOwnedTerritory = game.userOwnedTerritory;
 
 		expect(map[0].player).toEqual(0);
 		expect(map[0].troops).toEqual(5);
@@ -28,8 +28,8 @@ describe("GameBoard", () => {
 		expect(map[15].player).toEqual(0);
 		expect(map[15].troops).toEqual(7);
 
-		expect(userOwnedTerritory[0]).toEqual(11);
-		expect(userOwnedTerritory[1]).toEqual(5);
+		expect(game.player1Territory).toEqual(11);
+		expect(game.player2Territory).toEqual(5);
 	});
 
 	it("attack", () => {
@@ -37,13 +37,13 @@ describe("GameBoard", () => {
 			0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0,
 			0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0,
 			1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1,
-			1, 1, 1, 0, 1, 1, 0, 1, 0, 1,
+			1, 1,
 		];
 		const stateBool = state.map((value) => (value === 1 ? true : false));
 
 		const game = new GameBoard(Field.fromBits(stateBool));
 
-		game.attack(0, 0, 1);
+		game.attack(Field(0), 0, 1);
 
 		expect(game.map[0].player).toEqual(0);
 		expect(game.map[0].troops).toEqual(5);
@@ -56,13 +56,13 @@ describe("GameBoard", () => {
 			0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0,
 			0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0,
 			1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1,
-			1, 1, 1, 0, 1, 1, 0, 1, 0, 1,
+			1, 1,
 		];
 		const stateBool = state.map((value) => (value === 1 ? true : false));
 
 		const game = new GameBoard(Field.fromBits(stateBool));
 
-		game.attack(0, 0, 1);
+		game.attack(Field(0), 0, 1);
 
 		expect(game.map[0].player).toEqual(0);
 		expect(game.map[0].troops).toEqual(5);
