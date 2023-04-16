@@ -1,4 +1,4 @@
-import { InvisibleEmpireCore } from "./InvisibleEmpireCore";
+import { InvisibleEmpireCore, getMapDefaultState } from "./InvisibleEmpireCore";
 import {
 	isReady,
 	shutdown,
@@ -8,6 +8,7 @@ import {
 	PublicKey,
 	AccountUpdate,
 	Bool,
+	Signature,
 } from "snarkyjs";
 
 let proofsEnabled = false;
@@ -34,8 +35,6 @@ describe("InvisibleEmpireCore", () => {
 		zkAppPrivateKey = PrivateKey.random();
 		zkAppAddress = zkAppPrivateKey.toPublicKey();
 		zkApp = new InvisibleEmpireCore(zkAppAddress);
-
-		``;
 	});
 
 	afterAll(() => {
@@ -82,6 +81,22 @@ describe("InvisibleEmpireCore", () => {
 		const gameDone = zkApp.gameDone.get();
 		expect(gameDone).toEqual(Bool(false));
 		const gameMap = zkApp.map.get();
-		expect(gameMap).toEqual(Field(0));
+		expect(gameMap).toEqual(getMapDefaultState());
+	});
+
+	it("play", async () => {
+		await localDeploy();
+
+		let player2 = PrivateKey.random();
+
+		const sign = Signature.create(senderKey, [Field(0), Field(1)]);
+
+		// update transaction
+		const txn = await Mina.transaction(senderAccount, () => {
+			zkApp.startGame(senderAccount, player2.toPublicKey());
+			zkApp.play(senderAccount, sign, Field(0), Field(1));
+		});
+		await txn.prove();
+		await txn.sign([senderKey]).send();
 	});
 });
